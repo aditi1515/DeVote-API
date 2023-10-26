@@ -1,0 +1,75 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\jatin\\Desktop\\devote-api\\contracts\\User.sol": {
+      "lastModificationDate": 1697692142156,
+      "contentHash": "fbcfb6912bbc102824caca1b5a77beb5",
+      "sourceName": "contracts/User.sol",
+      "solcConfig": {
+        "version": "0.8.17",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">0.8.10"
+      ],
+      "artifacts": [
+        "Users"
+      ]
+    },
+    "C:\\Users\\jatin\\Desktop\\devote-api\\contracts\\Voting.sol": {
+      "lastModificationDate": 1697687986697,
+      "contentHash": "63a6b733eb6d05dc00a6c90eec408f95",
+      "sourceName": "contracts/Voting.sol",
+      "solcConfig": {
+        "version": "0.8.17",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Voting"
+      ]
+    }
+  }
+}
