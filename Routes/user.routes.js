@@ -6,6 +6,8 @@ const {
 const jwt = require("jsonwebtoken");
 const { userObjectMapper } = require("../utils/mappers.js");
 const { authenticate, isOwner } = require("../middleware/authenticate.js");
+const { generateUserID } = require("../utils/userIDgenerator.js");
+const { generateUserSignUpData, sendMail } = require("../utils/mailer.js");
 const router = express.Router();
 router.post("/login", async (req, res) => {
  if (!userContractInstance)
@@ -24,6 +26,7 @@ router.post("/login", async (req, res) => {
    .cookie("token", token, {
     expires: new Date(Date.now() + 900000),
     httpOnly: true,
+    sameSite: "none",
    })
    .json({
     message: "Login successful",
@@ -42,7 +45,6 @@ router.post("/signup", async (req, res) => {
   const {
    firstname,
    lastname,
-   userID,
    age,
    password,
    houseaddress,
@@ -55,7 +57,6 @@ router.post("/signup", async (req, res) => {
   if (
    !firstname ||
    !lastname ||
-   !userID ||
    !password ||
    !aadhaarNumber ||
    !imageUrl ||
@@ -66,6 +67,8 @@ router.post("/signup", async (req, res) => {
    !email
   )
    return res.status(400).json({ message: "All fields are required" });
+
+  const userID = generateUserID(req.body);
 
   const response = await userContractInstance.signUp(
    firstname,
@@ -85,12 +88,16 @@ router.post("/signup", async (req, res) => {
    expiresIn: "1h",
   });
 
+  let emailData = generateUserSignUpData(userID,email,firstname + " " + lastname);
+
+  sendMail(emailData);
+
   res
    .cookie("token", token, {
     expires: new Date(Date.now() + 900000),
     httpOnly: true,
    })
-   .json({ message: "user created successfully" });
+   .json({ message: "user created successfully", userID });
  } catch (error) {
   console.log(error);
   res.status(404).json({ message: error.message });
