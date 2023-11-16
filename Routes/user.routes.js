@@ -8,7 +8,10 @@ const { userObjectMapper } = require("../utils/mappers.js");
 const { authenticate, isOwner } = require("../middleware/authenticate.js");
 const { generateUserID } = require("../utils/userIDgenerator.js");
 const { generateUserSignUpData, sendMail } = require("../utils/mailer.js");
+const {isValidAadhaar} = require("../utils/aadhaarValidator.js");
+
 const router = express.Router();
+
 router.post("/login", async (req, res) => {
  if (!userContractInstance)
   return res.status(500).json({ message: "User contract instance not found" });
@@ -18,15 +21,16 @@ router.post("/login", async (req, res) => {
    return res.status(400).json({ message: "Username and password required" });
   const response = await userContractInstance.login(userID, password);
   const user = await userObjectMapper(response);
+  user.isOwner = await votingContractInstance.isOwner(userID);
   const token = jwt.sign({ userID }, process.env.JWT_SECRET, {
    expiresIn: "1h",
   });
 
   return res
    .cookie("token", token, {
-    expires: new Date(Date.now() + 900000),
-    httpOnly: true,
-    sameSite: "none",
+    expires: new Date(Date.now() + 90000000),
+    httpOnly: false,
+    sameSite: "strict",
    })
    .json({
     message: "Login successful",
@@ -68,6 +72,8 @@ router.post("/signup", async (req, res) => {
   )
    return res.status(400).json({ message: "All fields are required" });
 
+  if (isValidAadhaar(aadhaarNumber) === false)
+   return res.status(400).json({ message: "Invalid Aadhaar Number" });
   const userID = generateUserID(req.body);
 
   const response = await userContractInstance.signUp(
@@ -88,13 +94,18 @@ router.post("/signup", async (req, res) => {
    expiresIn: "1h",
   });
 
-  let emailData = generateUserSignUpData(userID,email,firstname + " " + lastname);
+  let emailData = generateUserSignUpData(
+   userID,
+   email,
+   firstname + " " + lastname
+  );
 
   sendMail(emailData);
 
   res
    .cookie("token", token, {
-    expires: new Date(Date.now() + 900000),
+    sameSite: "strict",
+    expires: new Date(Date.now() + 90000000),
     httpOnly: true,
    })
    .json({ message: "user created successfully", userID });
@@ -120,6 +131,29 @@ router.post("/getUser", authenticate, async (req, res) => {
   user.isOwner = await votingContractInstance.isOwner(userID);
   return res.json({
    user,
+  });
+ } catch (error) {
+  console.log(error);
+  return res.status(500).json({ message: error.message });
+ }
+});
+
+router.post("/getUsers", authenticate, async (req, res) => {
+ if (!userContractInstance)
+  return res.status(500).json({ message: "User contract instance not found" });
+ try {
+  let users = [];
+  const { userIDs } = req?.body;
+  if (!userIDs) return res.status(400).json({ message: "User IDs required" });
+  for (let userID of userIDs) {
+   const response = await userContractInstance?.getUser(userID);
+   const user = await userObjectMapper(response);
+   user.isOwner = await votingContractInstance.isOwner(userID);
+   users.push(user);
+  }
+
+  return res.json({
+   users,
   });
  } catch (error) {
   console.log(error);

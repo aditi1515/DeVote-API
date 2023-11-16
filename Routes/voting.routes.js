@@ -166,6 +166,7 @@ router.post("/vote",authenticate, async (req, res) => {
 });
 
 router.post("/getAllContests", authenticate ,  async (req, res) => {
+  console.log("here");
  if (!votingContractInstance)
   return res
    .status(500)
