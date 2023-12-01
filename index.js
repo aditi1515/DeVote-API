@@ -8,7 +8,9 @@ const cors = require("cors");
 const DB_CONNECTION = require("./DB/DB_CONNECTION.js");
 
 DB_CONNECTION();
-app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
+app.use(
+ cors({ credentials: true, origin: "https://devote-frontend.vercel.app" })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use("/user", userRouter);
