@@ -8,17 +8,22 @@ const { userObjectMapper } = require("../utils/mappers.js");
 const { authenticate, isOwner } = require("../middleware/authenticate.js");
 const { generateUserID } = require("../utils/userIDgenerator.js");
 const { generateUserSignUpData, sendMail } = require("../utils/mailer.js");
-const {isValidAadhaar} = require("../utils/aadhaarValidator.js");
+const { isValidAadhaar } = require("../utils/aadhaarValidator.js");
+const User = require("../DB/userAadhaar.schema.js");
+const aadhaarKYC = require("../utils/aadhaarKYC.js");
 
 const router = express.Router();
 
+///////////////////////////////////////////login route///////////////////////////////
 router.post("/login", async (req, res) => {
  if (!userContractInstance)
   return res.status(500).json({ message: "User contract instance not found" });
  try {
   const { userID, password } = req.body;
+  console.log(userID, password);
   if (!userID || !password)
    return res.status(400).json({ message: "Username and password required" });
+
   const response = await userContractInstance.login(userID, password);
   const user = await userObjectMapper(response);
   user.isOwner = await votingContractInstance.isOwner(userID);
@@ -41,6 +46,8 @@ router.post("/login", async (req, res) => {
   return res.status(500).json({ message: error.message });
  }
 });
+
+////////////////////////////////// SIGN UP //////////////////////////////////
 
 router.post("/signup", async (req, res) => {
  if (!userContractInstance)
@@ -74,6 +81,28 @@ router.post("/signup", async (req, res) => {
 
   if (isValidAadhaar(aadhaarNumber) === false)
    return res.status(400).json({ message: "Invalid Aadhaar Number" });
+
+  // get aadhaar details from DB
+
+  const dbPayload = await User.findOne({
+   aadhaarNumber: aadhaarNumber,
+  });
+
+  if (!dbPayload)
+   return res
+    .status(400)
+    .json({ message: "Aadhaar KYC failed because it is not found in DB" });
+
+  console.log("dbPayload", dbPayload);
+
+  if (
+   aadhaarKYC({ firstname, lastname, age, aadhaarNumber }, dbPayload) === false
+  ) {
+   return res
+    .status(400)
+    .json({ message: "Aadhaar KYC failed!! Please enter valid details" });
+  }
+
   const userID = generateUserID(req.body);
 
   const response = await userContractInstance.signUp(
@@ -90,10 +119,12 @@ router.post("/signup", async (req, res) => {
    voterConstituency
   );
 
+  console.log(response);
+
   const token = jwt.sign({ userID }, process.env.JWT_SECRET, {
    expiresIn: "1h",
   });
-
+  console.log("generated userid", userID);
   let emailData = generateUserSignUpData(
    userID,
    email,

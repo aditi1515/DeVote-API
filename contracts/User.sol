@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >0.8.10;
 
-contract Users{
-
-    struct User{
+contract Users {
+    struct User {
         string firstname;
         string lastname;
         uint UserID;
@@ -17,11 +16,11 @@ contract Users{
         address userAddress;
     }
 
-
-    mapping (uint => string) private UserIDToPassword;
+    mapping(uint => string) private UserIDToPassword;
 
     User[] private users;
-    function signUp( 
+
+    function signUp(
         string memory firstname,
         string memory lastname,
         uint UserID,
@@ -33,61 +32,72 @@ contract Users{
         string memory aadhaarNumber,
         string memory imageUrl,
         string memory voterConstituency
-        ) public {
-
-            if(checkForValidSignUp(UserID)){
-                require(false,"Not allowed");  
-            }
-
-            User memory user = User(firstname,lastname,UserID,age,houseaddress,gender,email,aadhaarNumber,imageUrl,voterConstituency,msg.sender);
-            users.push(user);
-            UserIDToPassword[UserID] = password;
+    ) public {
+        if (checkForValidSignUp(UserID)) {
+            require(false, "Not allowed");
         }
 
-        function checkForValidSignUp(uint UserID) public view returns(bool){
-            for(uint i = 0 ; i < users.length ; i++){
-                if (users[i].UserID == UserID) {
+        User memory user = User(
+            firstname,
+            lastname,
+            UserID,
+            age,
+            houseaddress,
+            gender,
+            email,
+            aadhaarNumber,
+            imageUrl,
+            voterConstituency,
+            msg.sender
+        );
+        users.push(user);
+        UserIDToPassword[UserID] = password;
+    }
+
+    function checkForValidSignUp(uint UserID) public view returns (bool) {
+        for (uint i = 0; i < users.length; i++) {
+            if (users[i].UserID == UserID) {
                 return true; // Found a match
             }
+        }
+
+        // more checks in future
+
+        return false;
+    }
+
+    function getMap(uint UserID) public view returns (string memory) {
+        return UserIDToPassword[UserID];
+    }
+
+    function login(
+        uint UserID,
+        string memory password
+    ) public view returns (User memory) {
+        if (
+            keccak256(bytes(UserIDToPassword[UserID])) ==
+            keccak256(bytes(password))
+        ) {
+            for (uint i = 0; i < users.length; i++) {
+                if (users[i].UserID == UserID) {
+                    return users[i];
+                }
             }
-
-            // more checks in future 
-
-            return false;
         }
+        revert("User not found or password is incorrect");
+    }
 
-        function getMap(uint UserID) public view returns (string memory){
-            return UserIDToPassword[UserID];
-        }
-
-        function login(uint UserID , string memory password) public view returns(User memory) {
-            if(keccak256(bytes(UserIDToPassword[UserID])) == keccak256(bytes(password))) 
-    {
-        for (uint i = 0 ; i < users.length; i++){
-            if(users[i].UserID==UserID){
-                
+    function getUser(uint UserID) public view returns (User memory) {
+        for (uint i = 0; i < users.length; i++) {
+            if (users[i].UserID == UserID) {
                 return users[i];
             }
         }
-         }
-             revert("User not found or password is incorrect");
-        }
 
-        function getUser(uint UserID) public view returns(User memory) {
-          
-     
-        for (uint i = 0 ; i < users.length; i++){
-            if(users[i].UserID==UserID){
-                
-                return users[i];
-            }
-        }
-  
-             revert("User not found");
-        }
+        revert("User not found");
+    }
 
-        function getUsers()public view returns (User[] memory){
-            return users;
-        }
-
+    function getUsers() public view returns (User[] memory) {
+        return users;
+    }
 }

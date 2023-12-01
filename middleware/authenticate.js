@@ -6,7 +6,7 @@ const authenticate = async (req, res, next) => {
   if (!token) return res.status(401).json({ errorMessage: "Unauthorized" });
   const verified = jwt.verify(token, process.env.JWT_SECRET);
   req.userID = verified.userID;
-  console.log("authenticated");
+  console.log("authenticated",verified.userID);
   next();
  } catch (err) {
   console.log(err);

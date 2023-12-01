@@ -5,7 +5,9 @@ var cookieParser = require("cookie-parser");
 const userRouter = require("./Routes/user.routes.js");
 const votingRouter = require("./Routes/voting.routes.js");
 const cors = require("cors");
+const DB_CONNECTION = require("./DB/DB_CONNECTION.js");
 
+DB_CONNECTION();
 app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 app.use(express.json());
 app.use(cookieParser());
