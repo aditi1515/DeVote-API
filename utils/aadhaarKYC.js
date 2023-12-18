@@ -11,17 +11,21 @@ function aadhaarKYC(userPayload, dbPayload) {
  }
 
  if (userPayload.aadhaarNumber !== dbPayload.aadhaarNumber) {
+  console.log("Aadhaar Number mismatch");
   return false;
  }
  if (userPayload.firstname !== dbPayload.firstname) {
+  console.log("First Name mismatch");
   return false;
  }
  if (userPayload.lastname !== dbPayload.lastname) {
+  console.log("Last Name mismatch");
   return false;
  }
- if (userPayload.age !== dbPayload.age) {
-  return false;
- }
+ // if (userPayload.age !== dbPayload.age) {
+ //  console.log("Age mismatch");
+ //  return false;
+ // }
 
  return true;
 }
